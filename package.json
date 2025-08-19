@@ -7,11 +7,11 @@
     ]
   },
   "dependencies": {
-    "highlight.js": "^10.7.2",
+    "highlight.js": "^10.7.3",
     "react-loader-spinner": "^5.3.4"
   },
   "resolutions": {
-    "**/highlight.js": "10.7.2-local"
+    "**/highlight.js": "10.7.3"
   },
   "scripts": {
     "test:contracts": "cd contracts && forge test",
