@@ -1,4 +1,4 @@
-# Ethernaut Local Fork
+# Ethernaut Local Setup
 
 This repository is a fork of OpenZeppelin's Ethernaut codebase, modified to make local development and local gameplay setup reproducible.
 
@@ -7,7 +7,7 @@ The original upstream project lives at:
 - https://github.com/OpenZeppelin/ethernaut
 - https://ethernaut.openzeppelin.com
 
-### Docker Setup
+## Usage
 
 Run:
 
