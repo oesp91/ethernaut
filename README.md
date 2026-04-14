@@ -57,6 +57,29 @@ In order to install, build, and run Ethernaut locally, follow these instructions
     yarn start:ethernaut
     ```
 
+### One-shot local startup
+
+If you want to boot the local Anvil node, compile and deploy the contracts, and then start the frontend in one command:
+
+```bash
+yarn local:start
+```
+
+This script runs Ethernaut only against the local network, creates `client/src/gamedata/deploy.local.json` if needed, writes Anvil logs to `.local/anvil.log`, and keeps Anvil alive for as long as the frontend process is running.
+
+### Docker Compose startup
+
+If you want a reproducible local environment with Anvil and the frontend separated into containers:
+
+```bash
+docker compose up --build
+```
+
+This exposes:
+
+- `http://localhost:3000` for the frontend
+- `http://127.0.0.1:8545` for the local Anvil RPC
+
 ### Running locally (sepolia network)
 
 The same as using the local network but steps 2, 3 and 6 are not necessary.

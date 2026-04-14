@@ -1,5 +1,6 @@
 import * as ethutil from '../utils/ethutil';
 import * as actions from '../actions';
+import * as constants from '../constants';
 import { loadTranslations } from '../utils/translations';
 import { getGasFeeDetails } from '../utils/ethutil'
 import { verifyContract } from '../utils/contractutil';
@@ -39,19 +40,26 @@ const loadLevelInstance = (store) => (next) => (action) => {
       );
     };
 
-    const estimate = parseInt(action.level.instanceGas, 10) || 2000000;
     const deployFunds = state.network.web3.utils.toWei(
       parseFloat(action.level.deployFunds, 10).toString(),
       'ether'
     );
     getGasFeeDetails(state.network, 2).then(gasFeeDetails => {
+      const txParams = {
+        ...gasFeeDetails,
+        from: state.player.address,
+        value: deployFunds,
+      };
+
+      // Local play is more reliable if the wallet estimates gas itself.
+      // Static per-level gas hints easily go stale as contracts evolve.
+      if (state.network.networkId.toString() !== constants.NETWORKS.LOCAL.id) {
+        const estimate = parseInt(action.level.instanceGas, 10) || 2000000;
+        txParams.gas = Math.ceil(1.8 * estimate);
+      }
+
       state.contracts.ethernaut
-        .createLevelInstance(action.level.deployedAddress, {
-          gas: 1.8 * estimate.toString(),
-          ...gasFeeDetails,
-          from: state.player.address,
-          value: deployFunds,
-        })
+        .createLevelInstance(action.level.deployedAddress, txParams)
         .then((tx) => {
           for (var i = 0; i < tx.logs.length; i++) {
             if (tx.logs[i].event === "LevelInstanceCreatedLog") {

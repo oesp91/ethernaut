@@ -1,7 +1,10 @@
 import React from 'react'
 import loadText from '../../utils/textloader'
-import 'highlight.js/styles/vs2015-css.mjs'
-import hljs from 'highlight.js'
+import 'highlight.js/styles/vs2015.css'
+import hljs from 'highlight.js/lib/core'
+import solidity from 'highlightjs-solidity'
+
+solidity(hljs)
 
 class Code extends React.Component {
 

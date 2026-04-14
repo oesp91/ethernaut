@@ -10,6 +10,9 @@ client/build/
 client/node_modules/
 client/src/gamedata/deploy.local.json
 .env
+.local/
+contracts/foundry.lock
+contracts/out/build-info/*.json
 
 # Local Netlify folder
 .netlify

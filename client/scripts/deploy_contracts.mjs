@@ -6,11 +6,30 @@ import fs from "fs";
 import * as ethutil from "../src/utils/ethutil.js";
 import * as constants from "../src/constants.js";
 import HDWalletProvider from "@truffle/hdwallet-provider";
-import * as gamedata from "../src/gamedata/gamedata.json" assert { type: "json" };
-import * as EthernautABI from "../src/contracts/out/Ethernaut.sol/Ethernaut.json" assert { type: "json" };
-import * as ProxyAdminABI from "../src/contracts/out/ProxyAdmin.sol/ProxyAdmin.json" assert { type: "json" };
-import * as ImplementationABI from "../src/contracts/out/Statistics.sol/Statistics.json" assert { type: "json" };
-import * as ProxyStatsABI from "../src/contracts/out/ProxyStats.sol/ProxyStats.json" assert { type: "json" };
+
+const gamedata = JSON.parse(
+  fs.readFileSync(new URL("../src/gamedata/gamedata.json", import.meta.url))
+);
+const EthernautABI = JSON.parse(
+  fs.readFileSync(
+    new URL("../src/contracts/out/Ethernaut.sol/Ethernaut.json", import.meta.url)
+  )
+);
+const ProxyAdminABI = JSON.parse(
+  fs.readFileSync(
+    new URL("../src/contracts/out/ProxyAdmin.sol/ProxyAdmin.json", import.meta.url)
+  )
+);
+const ImplementationABI = JSON.parse(
+  fs.readFileSync(
+    new URL("../src/contracts/out/Statistics.sol/Statistics.json", import.meta.url)
+  )
+);
+const ProxyStatsABI = JSON.parse(
+  fs.readFileSync(
+    new URL("../src/contracts/out/ProxyStats.sol/ProxyStats.json", import.meta.url)
+  )
+);
 
 let web3;
 let ethernaut;
@@ -48,7 +67,7 @@ async function exec() {
     count++;
     console.log(colors.red(`(${count}) Will deploy ProxyStats.sol!`));
   }
-  gamedata.default.levels.map((level) => {
+  gamedata.levels.map((level) => {
     if (needsDeploy(deployData[level.deployId])) {
       count++;
       console.log(
@@ -85,7 +104,7 @@ async function deployContracts(deployData) {
   console.log("FROM: ", from);
 
   // Deploy/retrieve ethernaut contract
-  const Ethernaut = await ethutil.getTruffleContract(EthernautABI.default, {
+  const Ethernaut = await ethutil.getTruffleContract(EthernautABI, {
     from,
   });
   try {
@@ -115,48 +134,40 @@ async function deployContracts(deployData) {
   // set ProxyStats in Ethernaut
   await setStatProxy(from, props);
 
-  // Sweep levels
-  const promises = gamedata.default.levels.map(async (level) => {
-    // console.log('level: ', level);
-    return new Promise(async (resolve) => {
-      if (needsDeploy(deployData[level.deployId])) {
-        console.log(
-          `Deploying ${level.levelContract}, deployId: ${level.deployId}...`
-        );
+  // Sweep levels sequentially to avoid nonce collisions on a single deployer.
+  for (const level of gamedata.levels) {
+    if (needsDeploy(deployData[level.deployId])) {
+      console.log(
+        `Deploying ${level.levelContract}, deployId: ${level.deployId}...`
+      );
 
-        // Deploy contract
-        const LevelABI = JSON.parse(
-          fs.readFileSync(
-            `contracts/out/${
-              level.levelContract
-            }/${withoutExtension(level.levelContract)}.json`,
-            "utf-8"
-          )
-        );
-        const Contract = await ethutil.getTruffleContract(LevelABI, { from });
-        const contract = await Contract.new(...level.deployParams, props);
-        console.log(colors.yellow(`  ${level.name}: ${contract.address}`));
-        deployData[level.deployId] = contract.address;
-        console.log(
-          colors.gray(
-            `  storing deployed id: ${level.deployId} with address: ${contract.address}`
-          )
-        );
+      const LevelABI = JSON.parse(
+        fs.readFileSync(
+          `contracts/out/${
+            level.levelContract
+          }/${withoutExtension(level.levelContract)}.json`,
+          "utf-8"
+        )
+      );
+      const Contract = await ethutil.getTruffleContract(LevelABI, { from });
+      const contract = await Contract.new(...level.deployParams, props);
+      console.log(colors.yellow(`  ${level.name}: ${contract.address}`));
+      deployData[level.deployId] = contract.address;
+      console.log(
+        colors.gray(
+          `  storing deployed id: ${level.deployId} with address: ${contract.address}`
+        )
+      );
 
-        // Register level in Ethernaut contract
-        console.log(
-          `  Registering level ${level.levelContract} in Ethernaut.sol...`
-        );
-        const tx = await ethernaut.registerLevel(contract.address, props);
-        console.log(`Registered ${level.levelContract}!`);
-      } else {
-        console.log(`Using deployed ${level.levelContract}...`);
-      }
-      resolve(level);
-    });
-  });
-
-  return Promise.all(promises);
+      console.log(
+        `  Registering level ${level.levelContract} in Ethernaut.sol...`
+      );
+      await ethernaut.registerLevel(contract.address, props);
+      console.log(`Registered ${level.levelContract}!`);
+    } else {
+      console.log(`Using deployed ${level.levelContract}...`);
+    }
+  }
 }
 
 // ----------------------------------
@@ -164,7 +175,7 @@ async function deployContracts(deployData) {
 // ----------------------------------
 
 async function deployProxyAdmin(from, props, deployData) {
-  const ProxyAdmin = await ethutil.getTruffleContract(ProxyAdminABI.default, {
+  const ProxyAdmin = await ethutil.getTruffleContract(ProxyAdminABI, {
     from,
   });
 
@@ -182,7 +193,7 @@ async function deployProxyAdmin(from, props, deployData) {
 
 async function deployImplementation(from, props, deployData) {
   const Implementation = await ethutil.getTruffleContract(
-    ImplementationABI.default,
+    ImplementationABI,
     {
       from,
     }
@@ -201,7 +212,7 @@ async function deployImplementation(from, props, deployData) {
 }
 
 async function deployProxyStats(from, props, deployData) {
-  const ProxyStats = await ethutil.getTruffleContract(ProxyStatsABI.default, {
+  const ProxyStats = await ethutil.getTruffleContract(ProxyStatsABI, {
     from,
   });
   if (needsDeploy(deployData.proxyStats)) {
@@ -228,7 +239,7 @@ async function setStatProxy(from, props) {
   console.log(`Setting proxy in Ethernaut.sol...`);
 
   const ethernautContract = new web3.eth.Contract(
-    EthernautABI.default.abi,
+    EthernautABI.abi,
     ethernaut.address
   );
 

@@ -1,0 +1,8 @@
+.git
+.github
+.local
+node_modules
+client/node_modules
+client/build
+contracts/out
+client/src/gamedata/deploy.local.json

@@ -4,8 +4,13 @@ import fs from 'fs';
 import * as ethutil from '../src/utils/ethutil.js';
 import * as constants from '../src/constants.js';
 import HDWalletProvider from '@truffle/hdwallet-provider';
-import * as ProxyAdminABI from '../src/contracts/out/ProxyAdmin.sol/ProxyAdmin.json' assert { type: 'json' };
-import * as ImplementationABI from '../src/contracts/out/Statistics.sol/Statistics.json' assert { type: 'json' };
+
+const ProxyAdminABI = JSON.parse(
+  fs.readFileSync(new URL('../src/contracts/out/ProxyAdmin.sol/ProxyAdmin.json', import.meta.url))
+);
+const ImplementationABI = JSON.parse(
+  fs.readFileSync(new URL('../src/contracts/out/Statistics.sol/Statistics.json', import.meta.url))
+);
 
 let web3;
 
@@ -14,7 +19,7 @@ const DEPLOY_DATA_PATH = `./client/src/gamedata/deploy.${constants.ACTIVE_NETWOR
 async function deployImplementation(from, props) {
   console.log(colors.green(`Deploying Statistics.sol...`));
   const Implementation = await ethutil.getTruffleContract(
-    ImplementationABI.default,
+    ImplementationABI,
     {
       from,
     }
@@ -29,7 +34,7 @@ async function upgradeTo(from, props, newImplementation) {
   const deployedData = loadDeployData(DEPLOY_DATA_PATH);
 
   const proxyAdmin = new web3.eth.Contract(
-    ProxyAdminABI.default.abi,
+    ProxyAdminABI.abi,
     deployedData.proxyAdmin
   );
 

@@ -5,13 +5,38 @@ import HDWalletProvider from "@truffle/hdwallet-provider";
 import Web3 from "web3";
 import * as ethutil from "../src/utils/ethutil.js";
 import * as constants from "../src/constants.js";
-import * as EthernautABI from "../src/contracts/out/Ethernaut.sol/Ethernaut.json" assert { type: "json" };
-import * as ProxyStatsABI from "../src/contracts/out/ProxyStats.sol/ProxyStats.json" assert { type: "json" };
-import * as ProxyAdminABI from "../src/contracts/out/ProxyAdmin.sol/ProxyAdmin.json" assert { type: "json" };
-import * as ImplementationABI from "../src/contracts/out/Statistics.sol/Statistics.json" assert { type: "json" };
-import * as SupersederImplementationABI from "../src/contracts/out/StatisticsLevelSuperseder.sol/StatisticsLevelSuperseder.json" assert { type: "json" };
+const EthernautABI = JSON.parse(
+  fs.readFileSync(
+    new URL("../src/contracts/out/Ethernaut.sol/Ethernaut.json", import.meta.url)
+  )
+);
+const ProxyStatsABI = JSON.parse(
+  fs.readFileSync(
+    new URL("../src/contracts/out/ProxyStats.sol/ProxyStats.json", import.meta.url)
+  )
+);
+const ProxyAdminABI = JSON.parse(
+  fs.readFileSync(
+    new URL("../src/contracts/out/ProxyAdmin.sol/ProxyAdmin.json", import.meta.url)
+  )
+);
+const ImplementationABI = JSON.parse(
+  fs.readFileSync(
+    new URL("../src/contracts/out/Statistics.sol/Statistics.json", import.meta.url)
+  )
+);
+const SupersederImplementationABI = JSON.parse(
+  fs.readFileSync(
+    new URL(
+      "../src/contracts/out/StatisticsLevelSuperseder.sol/StatisticsLevelSuperseder.json",
+      import.meta.url
+    )
+  )
+);
 
-import gamedata from "../src/gamedata/gamedata.json" assert { type: "json" };
+const gamedata = JSON.parse(
+  fs.readFileSync(new URL("../src/gamedata/gamedata.json", import.meta.url))
+);
 const levels = gamedata.levels;
 
 // For testing purposes in a local fork uncomment one of the following lines to get forked network deployment data.
@@ -209,7 +234,7 @@ async function deployAndUpgradeStatisticsToStatisticsSuperseder() {
   // Deploy SupersederImplementation
   console.log(colors.grey(` Deploying StatisticsLevelSuperseder.sol...`));
   const SupersederImplementationContract = await ethutil.getTruffleContract(
-    SupersederImplementationABI.default,
+    SupersederImplementationABI,
     {
       from,
     }
@@ -687,20 +712,20 @@ async function loadGameContracts() {
   if (!from) from = (await web3.eth.getAccounts())[0];
 
   // Ethernaut
-  const Ethernaut = await ethutil.getTruffleContract(EthernautABI.default, {
+  const Ethernaut = await ethutil.getTruffleContract(EthernautABI, {
     from,
   });
   ethernaut = await Ethernaut.at(DeployData.ethernaut);
 
   // Statistics proxy
-  const ProxyStats = await ethutil.getTruffleContract(ProxyStatsABI.default, {
+  const ProxyStats = await ethutil.getTruffleContract(ProxyStatsABI, {
     from,
   });
   proxyStats = await ProxyStats.at(DeployData.proxyStats);
 
   // Statistics proxy with implementation ABI to call functions with proxy state
   const ProxyStatsWithImplementationABI = await ethutil.getTruffleContract(
-    ImplementationABI.default,
+    ImplementationABI,
     {
       from,
     }
@@ -709,7 +734,7 @@ async function loadGameContracts() {
 
   // Statistics proxy with superseder implementation ABI to call functions with proxy state
   const ProxyStatsWithSupersederImplementationABI = await ethutil.getTruffleContract(
-    SupersederImplementationABI.default,
+    SupersederImplementationABI,
     {
       from,
     }
@@ -719,13 +744,13 @@ async function loadGameContracts() {
   );
 
   // Statistics proxy admin
-  const ProxyAdmin = await ethutil.getTruffleContract(ProxyAdminABI.default, {
+  const ProxyAdmin = await ethutil.getTruffleContract(ProxyAdminABI, {
     from,
   });
   proxyAdmin = await ProxyAdmin.at(DeployData.proxyAdmin);
 
   // Statistics implementation
-  const StatsImplementation = await ethutil.getTruffleContract(ImplementationABI.default, {
+  const StatsImplementation = await ethutil.getTruffleContract(ImplementationABI, {
     from,
   });
   statsImplementation = await StatsImplementation.at(DeployData.implementation);

@@ -3,6 +3,8 @@ import pkgWeb3 from "web3";
 
 dotenv.config();
 
+const LOCAL_RPC_HOST = process.env.ETHERNAUT_RPC_HOST || "http://127.0.0.1";
+
 export const DEBUG = process.env.NODE_ENV !== "production";
 export const DEBUG_REDUX = DEBUG;
 export const SENTRY_DSN = process.env.REACT_APP_SENTRY_DSN;
@@ -13,7 +15,7 @@ export const NETWORKS = {
   LOCAL: {
     name: "local",
     id: "31337",
-    url: "http://localhost",
+    url: LOCAL_RPC_HOST,
     port: 8545,
   },
   SEPOLIA: {
@@ -54,7 +56,7 @@ export const NETWORKS_INGAME = {
   LOCAL: {
     name: "local",
     id: "31337",
-    url: "http://localhost",
+    url: "http://127.0.0.1",
     port: 8545,
   },
   SEPOLIA: {
@@ -195,12 +197,7 @@ export const CUSTOM_LOGGING = true; /* TRUE on production */
 export const SHOW_ALL_COMPLETE_DESCRIPTIONS = false; /* FALSE on production */
 export const SHOW_VERSION = true;
 
-// export const ACTIVE_NETWORK = NETWORKS.SEPOLIA
-// export const ACTIVE_NETWORK = NETWORKS.OPTIMISM_SEPOLIA
-// export const ACTIVE_NETWORK = NETWORKS.ARBITRUM_SEPOLIA
-// export const ACTIVE_NETWORK = NETWORKS.HOLESKY
-// export const ACTIVE_NETWORK = NETWORKS.AMOY
-// export const ACTIVE_NETWORK = NETWORKS.LOCAL;
+export const ACTIVE_NETWORK = NETWORKS.LOCAL;
 
 let id_to_network = {};
 Object.keys(NETWORKS)

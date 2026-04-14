@@ -1,0 +1,35 @@
+services:
+  anvil:
+    image: ghcr.io/foundry-rs/foundry:stable
+    working_dir: /app/contracts
+    entrypoint: ["anvil"]
+    command: ["--host", "0.0.0.0", "--block-time", "1", "--auto-impersonate"]
+    ports:
+      - "8545:8545"
+    volumes:
+      - .:/app
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    working_dir: /app
+    depends_on:
+      - anvil
+    command: bash scripts/run-local.sh
+    environment:
+      ETHERNAUT_RPC_HOST: http://anvil
+      START_ANVIL: "0"
+      HOST: 0.0.0.0
+      CHOKIDAR_USEPOLLING: "true"
+      WATCHPACK_POLLING: "true"
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - ethernaut_node_modules:/app/node_modules
+      - ethernaut_client_node_modules:/app/client/node_modules
+
+volumes:
+  ethernaut_node_modules:
+  ethernaut_client_node_modules:
